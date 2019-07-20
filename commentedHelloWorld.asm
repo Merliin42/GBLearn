@@ -1,4 +1,4 @@
-INCLUDE "hardware.inc" ; Include hardware specs
+INCLUDE "Includes/hardware.inc" ; Include hardware specs
 
 SECTION "Header", ROM0[$100] ; create a new section of code, for storage and define used bank as RMS0
 
@@ -56,7 +56,7 @@ Start:
 SECTION "Font", ROM0 ; Create a section where we store code
 
 FontTiles:
-INCBIN "font.chr" ; Include binary file
+INCBIN "TileMaps/font.chr" ; Include binary file
 FontTilesEnd:
 
 SECTION "Hello World string", ROM0 ; Create another section

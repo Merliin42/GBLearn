@@ -1,4 +1,4 @@
-INCLUDE "hardware.inc"
+INCLUDE "Includes/hardware.inc"
 
 ; Defining constants to work with sprite
 _SPR0Y EQU _OAMRAM
@@ -78,10 +78,8 @@ Start:
 	ld [_MOVX], a
 
 animation:
-.wait
-	ld a, [rLY]
-	cp 144
-	jr nz, .wait
+	;call waitVBlank
+	call lcdOff
 
 	ld a, [_SPR0Y]
 	ld hl, _MOVY
@@ -104,7 +102,6 @@ animation:
 	ld [_MOVY], a
 .endY
 	; We go with the X, the same but changing the margin
-
 	ld a, [_SPR0X]
 	ld hl, _MOVX
 	add a, [hl]
@@ -125,23 +122,20 @@ animation:
 	ld a, 1
 	ld [_MOVX], a
 .endX
+	
+	ld a, %11100100
+	ld [rOBP0], a
 
 	call delay
 	jr animation
 
-
 .lockup
 	jr .lockup
 
-SECTION "Font", ROM0
+SECTION "Tiles", ROM0
 
 tiles:
-	db $00, $00, $00, $00, $00, $00, $00, $00
-	db $00, $00, $00, $00, $00, $00, $00, $00
-	db $00, $00, $E0, $EC, $40, $48, $00, $0C
-	db $C0, $00, $AC, $0C, $CC, $0C, $08, $08
-	;db  $3E, $3E, $41, $7F, $41, $6B, $41, $7F
-    ;db  $41, $63, $41, $7F, $3E, $3E, $00, $00
+INCBIN "TileMaps/tcdp.chr"
 tilesEnd:
 
 SECTION "Functions", ROM0
@@ -153,7 +147,7 @@ lcdOff:
 	ld [rLCDC], a
 	ret
 
-; Wait
+; Wait during 10 VBlank
 delay:
 	ld bc, 10
 .loopDelay
@@ -164,6 +158,7 @@ delay:
 	jr nz, .loopDelay
 	ret
 
+; Wait VBlank
 waitVBlank:
 .loopVBlank
 	ld a, [rLY]
