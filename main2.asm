@@ -140,28 +140,33 @@ tiles:
 	db $00, $00, $00, $00, $00, $00, $00, $00
 	db $00, $00, $E0, $EC, $40, $48, $00, $0C
 	db $C0, $00, $AC, $0C, $CC, $0C, $08, $08
+	;db  $3E, $3E, $41, $7F, $41, $6B, $41, $7F
+    ;db  $41, $63, $41, $7F, $3E, $3E, $00, $00
 tilesEnd:
 
 SECTION "Functions", ROM0
 
 ; Turn off the screen
 lcdOff:
-.waitVBlank
-	ld a, [rLY]
-	cp 144
-	jr c, .waitVBlank
-
+	call waitVBlank
 	xor a ; ld a, 0
 	ld [rLCDC], a
 	ret
 
 ; Wait
 delay:
-	ld bc, 2000
-.loop
+	ld bc, 10
+.loopDelay
+	call waitVBlank
 	dec bc
 	ld a, b
 	or c
-	jr nz, .loop
+	jr nz, .loopDelay
+	ret
 
+waitVBlank:
+.loopVBlank
+	ld a, [rLY]
+	cp 144
+	jr c, .loopVBlank
 	ret
