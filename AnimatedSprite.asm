@@ -129,7 +129,7 @@ animation:
 .lockup
 	jr .lockup
 
-SECTION "TIles", ROM0
+SECTION "Tiles", ROM0
 
 tiles:
 	db $00, $00, $00, $00, $00, $00, $00, $00
