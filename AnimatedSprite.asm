@@ -78,8 +78,7 @@ Start:
 	ld [_MOVX], a
 
 animation:
-	;call waitVBlank
-	call lcdOff
+	call waitVBlank
 
 	ld a, [_SPR0Y]
 	ld hl, _MOVY
@@ -122,20 +121,21 @@ animation:
 	ld a, 1
 	ld [_MOVX], a
 .endX
-	
-	ld a, %11100100
-	ld [rOBP0], a
 
 	call delay
 	jr animation
 
+
 .lockup
 	jr .lockup
 
-SECTION "Tiles", ROM0
+SECTION "TIles", ROM0
 
 tiles:
-INCBIN "TileMaps/tcdp.chr"
+	db $00, $00, $00, $00, $00, $00, $00, $00
+	db $00, $00, $00, $00, $00, $00, $00, $00
+	db $00, $00, $E0, $EC, $40, $48, $00, $0C
+	db $C0, $00, $AC, $0C, $CC, $0C, $08, $08
 tilesEnd:
 
 SECTION "Functions", ROM0
@@ -147,18 +147,16 @@ lcdOff:
 	ld [rLCDC], a
 	ret
 
-; Wait during 10 VBlank
+; Wait
 delay:
-	ld bc, 10
+	ld bc, 1000
 .loopDelay
-	call waitVBlank
 	dec bc
 	ld a, b
 	or c
 	jr nz, .loopDelay
 	ret
 
-; Wait VBlank
 waitVBlank:
 .loopVBlank
 	ld a, [rLY]
