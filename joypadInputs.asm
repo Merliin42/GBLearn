@@ -85,10 +85,10 @@ move:
 ; Move Y
 	ld a, b
 	and $80
-	jr z, .down
+	jr nz, .down
 	ld a, b
 	and $40
-	jr z, .up
+	jr nz, .up
 	xor a
 	jr .endY
 .down
@@ -102,10 +102,10 @@ move:
 ; Move X
 	ld a, b
 	and $20
-	jr z, .left
+	jr nz, .left
 	ld a, b
 	and $10
-	jr z, .right
+	jr nz, .right
 	xor a
 	jr .endX
 .left
@@ -192,5 +192,6 @@ readInputs:
 
 	and a, $0F
 	add b
+	cpl
 	ld b, a
 	ret
