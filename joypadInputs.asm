@@ -136,10 +136,7 @@ move:
 SECTION "Graphics", ROM0
 
 tiles:
-	db $00, $00, $00, $00, $00, $00, $00, $00
-	db $00, $00, $00, $00, $00, $00, $00, $00
-	db $00, $00, $E0, $EC, $40, $48, $00, $0C
-	db $C0, $00, $AC, $0C, $CC, $0C, $08, $08
+INCLUDE "TileMaps/tcdp.z80"
 tilesEnd:
 
 SECTION "Functions", ROM0
