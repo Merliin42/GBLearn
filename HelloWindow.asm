@@ -1,4 +1,4 @@
-INCLUDE "hardware.inc"
+INCLUDE "Includes/hardware.inc"
 
 ; Defines constant for our sprites
 _SPR0Y EQU _OAMRAM
@@ -138,11 +138,11 @@ Start:
 
 	ld a, [_PAD] ; Charge the status pad
 	and %00010000 ; right
-	call nz, moveLeft ; If the button is set, move to the left
+	call nz, moveRight ; If the button is set, move to the left
 
 	ld a, [_PAD]
 	and %00100000
-	call nz, moveRight
+	call nz, moveLeft
 
 	ld a, [_PAD]
 	and %01000000
@@ -165,14 +165,14 @@ Start:
 	call delay
 
 	; Do this loop again
-	jr movement
+	jr .movement
 
 SECTION "Movement routines", ROM0
 
-moveLeft:
+moveRight:
 	ld a, [_SPR0X]
 	cp 120
-	jr nz, .al
+	jr nz, .ar
 
 	ld a, [rSCX]
 	inc a
@@ -182,15 +182,43 @@ moveLeft:
 	call numSprMario
 	call animateMario
 	ret
-.al
+.ar
 	; The second sprite must be behind the first
 	push af
 	ld a, -8
-	[_POS_MAR_2], a
+	ld [_POS_MAR_2], a
 	pop af
 	; motion
 	inc a
 	ld [_SPR0X], a
+	ld [_SPR1X], a
+
+	ld hl, _POS_MAR_2
+	add a, [hl]
+	ld [_SPR2X], a
+	ld [_SPR3X], a
+
+; Reflect sprites horizontally
+	ld a, [_SPR0_ATT]
+	set 5, a
+	ld [_SPR0_ATT], a
+	ld [_SPR1_ATT], a
+	ld [_SPR2_ATT], a
+	ld [_SPR3_ATT], a
+
+	call numSprMario
+	call walkMario
+	ret
+
+moveLeft:
+	ld a, [_SPR0X]
+	cp 16
+	jp nz, .al
+
+	ld a, [rSCX]
+	dec a
+	ld [rSCX], a
+	
 
 SECTION "Functions", ROM0
 
