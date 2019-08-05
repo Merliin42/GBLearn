@@ -1,5 +1,5 @@
 # Specify filepatterns you want git to ignore.
 
-*.O
+*.o
 *.gb
 wiki/*
