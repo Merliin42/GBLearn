@@ -146,11 +146,11 @@ Start:
 
 	ld a, [_PAD]
 	and %01000000
-	call nz, moveUp
+	;call nz, moveUp
 
 	ld a, [_PAD]
 	and %10000000
-	call nz, moveDown
+	;call nz, moveDown
 
 	ld a, [_PAD]
 	and %00001000
@@ -218,6 +218,37 @@ moveLeft:
 	ld a, [rSCX]
 	dec a
 	ld [rSCX], a
+
+	call numSprMario
+	call animateMario
+	ret
+
+.al
+
+	push af
+	ld a, 8
+	ld [_POS_MAR_2], a
+	pop af
+
+	; Motion
+	dec a
+	ld [_SPR0X], a
+	ld [_SPR1X], a
+
+	ld hl, _POS_MAR_2
+	add a, [hl]
+	ld [_SPR2X], a
+	ld [_SPR3X], a
+
+	ld a, [_SPR0_ATT]
+	res 5, a
+	ld [_SPR0_ATT], a
+	ld [_SPR1_ATT], a
+	ld [_SPR2_ATT], a
+	ld [_SPR3_ATT], a
+
+	call numSprMario
+	call animateMario
 	
 
 SECTION "Functions", ROM0
