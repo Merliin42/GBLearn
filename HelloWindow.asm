@@ -249,7 +249,92 @@ moveLeft:
 
 	call numSprMario
 	call animateMario
-	
+
+showWindow:
+	ld a, 8
+	ld [rWY], a
+
+	ld a, 144
+	ld [rWY], a
+
+	; Activate and desactivate the window sprites
+	ld a, [rLCDC]
+	or LCDCF_WINON
+	res 1, a
+	ld [rLCDC], a
+
+	; Animation
+	ld a, 144
+.windowIn
+	push af
+	ld bc, 1000
+	call delay
+	pop af
+	dec a
+	ld [rWY], a
+	jr nz, .windowIn
+
+	; We wait for the player to press exit
+.waitExit
+	call readInputs
+	and %00001000
+	jr z, .waitExit
+
+.windowOut
+	push af
+	ld bc, 1000
+	call delay
+	pop af
+	inc a
+	dl [rWY], a
+	cp 144
+	jr nz, .windowOut
+
+	; Desactivate and activate the window sprites
+	ld a, [rLCDC]
+	res 5, a
+	or LCDCF_OBJON
+	ld [rLCDC], a
+
+	ret
+
+; If nothing is pressed, this function set the mario sprite by static
+noInput:
+	ld hl, _SPR_MAR_SUM
+	ld [hl], 0
+
+	ld a, 0
+	ld [_SPR0_NUM], a
+	inc a
+	ld [_SPR1_NUM], a
+	inc a
+	ld [_SPR2_NUM], a
+	inc a
+	ld [_SPR3_NUM], a
+	ret
+
+; Modify the variables to change mario sprite walking
+numSprMario:
+	ld a, [_SPR_MAR_SUM]
+	add 4
+	ld [_SPR_MAR_SUM], a
+	cp 12
+	ret nz
+
+	ld a, 4
+	ld [_SPR_MAR_SUM], a
+	ret
+
+walkMario:
+	ld a, [_SPR_MAR_SUM]
+	ld [_SPR0_NUM], a
+	inc a
+	ld [_SPR1_NUM], a
+	inc a
+	ld [_SPR2_NUM], a
+	inc a
+	ld [_SPR3_NUM], a
+	ret
 
 SECTION "Functions", ROM0
 
