@@ -43,7 +43,7 @@ SECTION "Game code", ROM0
 Start:
 
 	ld hl, _POS_MAR_2 ; Sprites looking to the right
-	ld [hl], -8
+	ld [hl], 8
 
 	ld hl, _SPR_MAR_SUM ; We start with 0
 	ld [hl], 0
@@ -66,20 +66,20 @@ Start:
 	call lcdOff
 
 	; Load the tiles in VRAM
-	ld hl, Tiles
-	ld de, $8000
+	ld hl, $8000
+	ld de, Tiles
 	ld bc, EndTiles - Tiles
 	call copyMemory
 
 	; Load the map
-	ld hl, Map
-	ld de, $9800
+	ld hl, $9800
+	ld de, Map
 	ld bc, EndMap - Map
 	call copyMemory
 
 	; Load the map to the window
-	ld hl, Window
-	ld de, $9C00
+	ld hl, $9C00
+	ld de, Window
 	ld bc, EndWindow - Window
 	call copyMemory
 
@@ -141,19 +141,19 @@ Start:
 	call nz, moveRight ; If the button is set, move to the left
 
 	ld a, [_PAD]
-	and %00100000
+	and %00100000 ; left
 	call nz, moveLeft
 
-	ld a, [_PAD]
-	and %01000000
+	;ld a, [_PAD]
+	;and %01000000
 	;call nz, moveUp
 
-	ld a, [_PAD]
-	and %10000000
+	;ld a, [_PAD]
+	;and %10000000
 	;call nz, moveDown
 
 	ld a, [_PAD]
-	and %00001000
+	and %00001000 ; select
 	call nz, showWindow
 
 	ld a, [_PAD]
@@ -180,8 +180,9 @@ moveRight:
 
 	; Apply translate to the sprites
 	call numSprMario
-	call animateMario
+	call walkMario
 	ret
+
 .ar
 	; The second sprite must be behind the first
 	push af
@@ -220,7 +221,7 @@ moveLeft:
 	ld [rSCX], a
 
 	call numSprMario
-	call animateMario
+	call walkMario
 	ret
 
 .al
@@ -248,11 +249,13 @@ moveLeft:
 	ld [_SPR3_ATT], a
 
 	call numSprMario
-	call animateMario
+	call walkMario
+
+	ret
 
 showWindow:
-	ld a, 8
-	ld [rWY], a
+	ld a, 7
+	ld [rWX], a
 
 	ld a, 144
 	ld [rWY], a
@@ -286,7 +289,7 @@ showWindow:
 	call delay
 	pop af
 	inc a
-	dl [rWY], a
+	ld [rWY], a
 	cp 144
 	jr nz, .windowOut
 
@@ -367,7 +370,7 @@ delay:
 ; down | up | left | right | start | select | B | A
 readInputs:
 	ld a, %00100000 ; Read the directional pad
-	ld a, [rP1]
+	ld [rP1], a
 
 ; Read several times for avoiding bouncing
 	ld a, [rP1]
@@ -381,7 +384,7 @@ readInputs:
 
 ; Do the exact same thing with a, b, start and select
 	ld a, %00010000
-	ld a, [rP1]
+	ld [rP1], a
 
 	ld a, [rP1]
 	ld a, [rP1]
@@ -419,7 +422,7 @@ cleanMemory:
 	dec bc
 	ld a, b
 	or c
-	jr nz, copyMemory
+	jr nz, cleanMemory
 	ret
 
 SECTION "Graphics", ROM0
