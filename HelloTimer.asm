@@ -6,10 +6,20 @@ _ACTIVATE EQU _RAM+1 ; Stopwatch activated or not
 _SECONDS EQU _RAM+2
 _MINUTES EQU _RAM+3
 _HOURS EQU _RAM+4
-PAD EQU _RAM+5
+_PAD EQU _RAM+5
 
 ; Constants
 _POS_CRONO EQU _SCRN0+32*4+6 ; Screen position
+
+; Vblank interruption
+SECTION "Vblank", ROM0[$0040]
+	call drawChrono
+	reti ; Return and enable interrupts
+
+SECTION "TimerOverflow", ROM0[$0050]
+	; When there is an interruption of the timer, we call this subroutine
+	call controlTimer
+	reti
 
 SECTION "Header", ROM0[$100]
 
@@ -21,15 +31,126 @@ REPT $150 - $104
 	db 0
 ENDR
 
-; Vblank interruption
-SECTION "Vblank", ROM0[$0040]
-	call drawChrono
-	reti ; Return and enable interrupts
+SECTION "Game Code", ROM0
+Start:
+	; We start the timer
+	xor a ; ld a, 0
+	ld [rTAC], a ; Off timer, divider to 00
 
-SECTION "TimerOverflow", ROM0[$0050]
-	; When there is an interruption of the timer, we call this subroutine
-	call controlTimer
-	reti
+	ld a, 51
+	ld [rTMA], a ; When TIMA overflows, this is
+				 ; reset value, (1/4096)*(255-51) = 0,049s
+	ld [rTIMA], a ; initial value of the timer
+
+	; Begin the variables
+	xor a ; ld a, 0
+	ld [_CONTROL_TIMER], a
+	ld [_ACTIVATE], a
+	ld [_SECONDS], a
+	ld [_MINUTES], a
+	ld [_HOURS], a
+
+	; Pallet
+	ld a, %11100100
+	ld [rBGP], a
+	ld [rOBP0], a
+
+	; Scroll
+	xor a ; ld a, 0
+	ld [rSCX], a
+	ld [rSCY], a
+
+	; video
+
+	call lcdOff
+
+	; the tiles loaded in memory
+
+	ld hl, _VRAM
+	ld de, Tiles
+	ld bc, EndTiles-Tiles
+	call copyMemory
+
+	; We clean the map
+	ld hl, _SCRN0
+	ld bc, 32*32
+	call cleanMemory
+
+	; Clean sprite attributes
+	ld hl, _OAMRAM
+	ld bc, 40*4
+	call cleanMemory
+
+	; We draw the Stopwatch
+	call drawChrono
+
+	; Configure and activate the display
+	ld a, %10010001
+	ld [rLCDC], a
+
+	; Main control loop
+control:
+	; We read the pad
+	call readInputs
+
+	; Now activate or desactivate the timer
+	ld a, [_PAD]
+	and %00000001 ; A
+	call nz, activate
+
+	; reset
+	ld a, [_PAD]
+	and %00000010 ; B
+	call nz, reset
+
+	ld bc, 15000
+	call delay
+	; we start
+	jr control
+
+activate:
+	ld a, [_ACTIVATE]
+	cp 1
+	jp z, .desactivate
+	ld a, 1
+	ld [_ACTIVATE], a
+
+	ld a, %00000100 ; timer activated
+	ld [rTAC], a
+
+	ld a, %00000101 ; Vblank timer interrupt
+	ld [rIE], a
+	ei ; activate interrupts
+	ret
+.desactivate
+	ld a, 0
+	ld [_ACTIVATE], a
+
+	ld a, %00000000 ; Timer disabled
+	ld [rTAC], a
+
+	ld a, %00000101 ; Vblank timer interrupts
+	ld [rIE], a
+	di ; disable interrupts
+	ret
+
+	; reset the timer
+reset:
+	ld a, 0
+	ld [_SECONDS], a
+	ld [_MINUTES], a
+	ld [_HOURS], a
+
+	ld a, 51 ; initial value of the timer
+	ld [rTIMA], a
+
+	; look if activated
+	ld a, [_ACTIVATE]
+	ret z
+	; if not, we redraw
+	call waitVBlank
+	call drawChrono
+	ret
 
 SECTION "Functions", ROM0
 
@@ -88,7 +209,7 @@ controlTimer:
 
 .increment
 	; We reset the counter
-	ld a, 0
+	xor a ; ld a, 0
 	ld [_CONTROL_TIMER], a
 
 	; We increased the clock
@@ -101,7 +222,7 @@ controlTimer:
 	ret
 
 .minutes
-	ld a, 0
+	xor a ; ld a, 0
 	ld [_SECONDS], a ; minute, seconds increase to 0
 
 	ld a, [_MINUTES]
@@ -113,7 +234,7 @@ controlTimer:
 	ret
 
 .hours
-	ld a, 0
+	xor a ; ld a, 0
 	ld [_MINUTES], a
 
 	ld a, [_HOURS]
@@ -129,3 +250,15 @@ controlTimer:
 	call reset
 
 	ret
+
+SECTION "Library", ROM0
+INCLUDE "Includes/library/inputs.asm"
+INCLUDE "Includes/library/memory.asm"
+INCLUDE "Includes/library/screen.asm"
+INCLUDE "Includes/library/time.asm"
+
+SECTION "Tiles", ROM0
+
+Tiles:
+INCLUDE "TileMaps/Numbers.z80"
+EndTiles:
