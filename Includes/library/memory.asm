@@ -16,9 +16,10 @@ copyMemory:
 ; Clean a memory location
 ; Parameters :
 ; hl - Destination address
+; d - Number to fill
 ; bc - Counter
 cleanMemory:
-	xor a ; ld a, 0
+	ld a, d ; ld a, 0
 	ld [hli], a
 	dec bc
 	ld a, b

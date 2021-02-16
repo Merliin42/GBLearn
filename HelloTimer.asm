@@ -73,11 +73,13 @@ Start:
 
 	; We clean the map
 	ld hl, _SCRN0
+	ld d, 12
 	ld bc, 32*32
 	call cleanMemory
 
 	; Clean sprite attributes
 	ld hl, _OAMRAM
+	ld d, 0
 	ld bc, 40*4
 	call cleanMemory
 
@@ -103,7 +105,7 @@ control:
 	and %00000010 ; B
 	call nz, reset
 
-	ld bc, 15000
+	ld bc, 1500
 	call delay
 	; we start
 	jr control
