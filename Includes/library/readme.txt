@@ -22,6 +22,15 @@ memory.asm
 		Reset all bytes on a memory location
 		Params:
 			hl - Destination address
+			d - Number to fill with
+			bc - Counter
+		Return: NONE
+
+|
+\_ clearMemory:
+		Reset all bytes on a memory location
+		Params:
+			hl - Destination address
 			bc - Counter
 		Return: NONE
 

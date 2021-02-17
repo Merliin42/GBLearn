@@ -3,6 +3,6 @@
 Param(
 [string]$n
 )
-rgbasm -o .\Binary\$n.o .\$n.asm
+rgbasm -o .\Binary\$n.o .\Source\$n.asm
 rgblink -o .\ROM\$n.gb .\Binary\$n.o
 rgbfix -v -p 0 .\ROM\$n.gb

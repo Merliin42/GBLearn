@@ -26,3 +26,16 @@ cleanMemory:
 	or c
 	jr nz, cleanMemory
 	ret
+
+; Clear a memory location
+; Parameters :
+; hl - Destination address
+; bc - Counter
+clearMemory:
+	xor a ; ld a, 0
+	ld [hli], a
+	dec bc
+	ld a, b
+	or c
+	jr nz, clearMemory
+	ret
